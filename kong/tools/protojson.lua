@@ -1,7 +1,7 @@
 local protojson = {
   _DESCRIPTION = [[
     Conversion between protobuf binary format and tables representing JSON
-    
+
     Implementations used as a base:
       https://developers.google.com/protocol-buffers/docs/proto3#json
       https://pkg.go.dev/google.golang.org/protobuf/encoding/protojson
@@ -46,7 +46,7 @@ local function type_url_to_type_name( type_url )
   return "." .. type_name[1]
 end
 
-local is_int = { 
+local is_int = {
   int64 = true, sint64 = true, sfixed64 = true, uint64 = true, fixed64 = true,
   int32 = true, sint32 = true, sfixed32 = true, uint32 = true, fixed32 = true
 }
@@ -241,15 +241,14 @@ field_to_json = function( f, f_type, path )
   if ( f_kind == "message" ) then
     return message_to_json( f, f_type, path )
   elseif ( f_type == "bytes" ) then
-    return ngx.encode_base64( f ) 
+    return ngx.encode_base64( f )
   elseif ( is_int[ f_type ] ) then -- parse numeric value
-    if ( type(f) ~= "number" or f ~= f or f ~= math.floor( f ) ) then -- possibly remove
-      error( ("invalid integer value at %s, got: %s"):format(path, f), 0 )
-    end
-
     if is_int64[ f_type ] then
-      return tostring( f )
+      return string.gsub(f, "^#", "")
     else
+      if ( type(f) ~= "number" or f ~= f or f ~= math.floor( f ) ) then -- possibly remove
+        error( ("invalid integer value at %s, got: %s"):format(path, f), 0 )
+      end
       return f
     end
   elseif ( is_decimal[ f_type ] ) then
@@ -578,14 +577,14 @@ function protojson:decode_to_json( msg_type, msg, path )
   else
     pb.option( "no_default_values" )
   end
-  
+
   if ( enum_as_name ) then
     pb.option( "enum_as_name" )
   else
     pb.option( "enum_as_value" )
   end
 
-  pb.option( "int64_as_number" )
+  pb.option( "int64_as_string" )
 
   return message_to_json( pb.decode( msg_type, msg ), msg_type, path )
 end
