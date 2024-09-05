@@ -487,6 +487,7 @@ json_to_field = function( f, f_type, path )
       error( ("expected boolean value at %s, got: '%s' of type: %s"):format(path, f, type(f)), 0 )
     end
   elseif ( is_int[ f_type ] ) then -- parse numeric value
+    local orig_f = f
     if ( tonumber( f ) == nil ) then
       error( ("invalid numeric value at %s, got: '%s'"):format(path, f), 0 )
     end
@@ -498,6 +499,7 @@ json_to_field = function( f, f_type, path )
     elseif ( f ~= math.floor( f ) ) then
       error( ("integer value required at %s, got %f"):format(path, f), 0 )
     end
+    return ("#%s"):format(orig_f)
   elseif ( is_decimal[ f_type ] ) then
     if ( tonumber( f ) == nil ) then
       error( ("invalid numeric value at %s, got: %s"):format(path, f), 0 )

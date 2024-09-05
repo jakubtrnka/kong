@@ -1,0 +1,27 @@
+diff --git a/bundle/lua-cjson-2.1.0.13/lua_cjson.c b/bundle/lua-cjson-2.1.0.13/lua_cjson.c
+index cb86572..36ada46 100644
+--- a/bundle/lua-cjson-2.1.0.13/lua_cjson.c
++++ b/bundle/lua-cjson-2.1.0.13/lua_cjson.c
+@@ -1142,12 +1142,17 @@ static void json_next_number_token(json_parse_t *json, json_token_t *token)
+ {
+     char *endptr;
+ 
+-    token->type = T_NUMBER;
+-    token->value.number = fpconv_strtod(json->ptr, &endptr);
+-    if (json->ptr == endptr)
++    token->type = T_STRING;
++    fpconv_strtod(json->ptr, &endptr);
++    if (json->ptr == endptr) {
+         json_set_token_error(token, json, "invalid number");
+-    else
+-        json->ptr = endptr;     /* Skip the processed number */
++    }
++
++    strbuf_reset(json->tmp);
++    for (; json->ptr != endptr; json->ptr++) {
++        strbuf_append_char_unsafe(json->tmp, json->ptr[0]);
++    }
++    token->value.string = strbuf_string(json->tmp, &token->string_len);
+ 
+     return;
+ }
